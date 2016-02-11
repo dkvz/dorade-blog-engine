@@ -3,6 +3,8 @@ package controllers;
 import play.*;
 import play.libs.Json;
 import play.mvc.*;
+
+import java.text.*;
 import java.util.*;
 
 import views.html.*;
@@ -17,34 +19,44 @@ public class Application extends Controller {
 //		hd.values.add("http://localhost:9010&quot;);
 //		Http.Response.current().headers.put("Access-Control-Allow-Origin",hd);
 //	}
+	private List<Map<String, String>> articlesList;
+	
+	public Application() {
+		articlesList = new ArrayList<Map<String, String>>();
+		SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
+		for (int i = 1; i < 100; i++) {
+    		Map<String, String> theMap = new HashMap<String, String>();
+	    	theMap.put("id", Integer.toString(i));
+	    	theMap.put("title", "Article de test numéro ".concat(Integer.toString(i)));
+	    	theMap.put("thumbImage", "images/patgpibgray.jpg");
+	    	// Should probably be an array:
+	    	theMap.put("tags", "tag1, tag2");
+	    	theMap.put("commentsCount", "10");
+	    	theMap.put("date", dateFormat.format(new Date()));
+	    	theMap.put("summary", "This is the summary.");
+	    	theMap.put("author", "VeZD");
+	    	articlesList.add(theMap);
+    	}
+	}
 	
     public Result index() {
         //return ok(index.render("Your new application is ready."));
-    	List<Map<String, String>> articles = new ArrayList<Map<String, String>>();
-    	Map<String, String> theMap = new HashMap<String, String>();
-    	theMap.put("id", "210");
-    	theMap.put("title", "Some Article");
-    	theMap.put("thumbImage", "images/art.png");
-    	// Should probably be an array:
-    	theMap.put("tags", "tag1, tag2");
-    	theMap.put("commentsCount", "12");
-    	theMap.put("date", new Date().toString());
-    	theMap.put("summary", "This is the summary.");
-    	theMap.put("author", "VeZD");
-    	articles.add(theMap);
-    	theMap = new HashMap<String, String>();
-    	theMap.put("id", "350");
-    	theMap.put("title", "Another Article");
-    	theMap.put("thumbImage", "images/art.png");
-    	// Should probably be an array:
-    	theMap.put("tags", "Technology, Science");
-    	theMap.put("commentsCount", "6");
-    	theMap.put("date", new Date().toString());
-    	theMap.put("summary", "I'm writing a slightly longer summary. Sort of.<br />A line feed too.");
-    	theMap.put("author", "VeZD");
-    	articles.add(theMap);
     	response().setHeader("Access-Control-Allow-Origin", "*");
-    	return ok(Json.toJson(articles));
+    	return ok(Json.toJson(articlesList));
+    }
+    
+    public Result articlesStartingFrom(Long articleId, Integer max) {
+    	if (max == null) {
+    		max = 30;
+    	}
+    	if (articleId > articlesList.size()) {
+    		return badRequest();
+    	}
+    	int start = articleId.intValue();
+    	int end = start + max.intValue();
+    	if (end > articlesList.size()) end = articlesList.size();
+    	response().setHeader("Access-Control-Allow-Origin", "*");
+    	return ok(Json.toJson(articlesList.subList(start, end)));
     }
 
 }
