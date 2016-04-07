@@ -9,8 +9,12 @@ scalaVersion := "2.11.6"
 libraryDependencies ++= Seq(
   javaJdbc,
   cache,
-  javaWs
+  jdbc,
+  javaWs,
+  "org.xerial" % "sqlite-jdbc" % "3.8.0-SNAPSHOT"
 )
+
+resolvers += "SQLite-JDBC Repository" at "https://oss.sonatype.org/content/repositories/snapshots"
 
 // Play provides two styles of routers, one expects its actions to be injected, the
 // other, legacy style, accesses its actions statically.
