@@ -2,6 +2,7 @@ package models;
 
 import javax.sql.*;
 import java.sql.*;
+import java.util.*;
 
 import play.db.*;
 
@@ -34,6 +35,20 @@ public class BlogDataAccess {
         }
         rset.close();
 		return usr;
+	}
+	
+	/**
+	 * Though the numbering of the "id" of article summaries starts at 1,
+	 * this method expects earliest "start" value to be 0.
+	 * @param start
+	 * @param count
+	 * @return
+	 */
+	public List<ArticleSummary> getArticleSummariesDescFromTo(int start, int count) {
+		List<ArticleSummary> res = new ArrayList<ArticleSummary>();
+		if (start < 0) start = 0;
+		
+		return res;
 	}
 	
 }
