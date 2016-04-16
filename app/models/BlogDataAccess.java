@@ -62,7 +62,7 @@ public class BlogDataAccess {
 	 * @param count
 	 * @return
 	 */
-	public List<ArticleSummary> getArticleSummariesDescFromTo(int start, int count) throws SQLException {
+	public List<ArticleSummary> getArticleSummariesDescFromTo(long start, int count) throws SQLException {
 		List<ArticleSummary> res = new ArrayList<ArticleSummary>();
 		if (start < 0) start = 0;
 		DataSource ds = DB.getDataSource();
@@ -70,12 +70,12 @@ public class BlogDataAccess {
 		// I could do this in a single statement but going to do it in two.
 		// I'm using limit and offset, which are supported by postgre and MySQL (normally) but
 		// not most other databases.
-		PreparedStatement stmt = conn.prepareStatement("SELECT title, article_url, thumb_image, " +
+		PreparedStatement stmt = conn.prepareStatement("SELECT id, title, article_url, thumb_image, " +
 				"date, user_id, summary FROM articles " +
 				"ORDER BY id DESC LIMIT ? OFFSET ?");
 		// The comments are not working so comment count is constant 0.
 		stmt.setInt(1, count); // LIMIT clause value
-		stmt.setInt(2, start); // OFFSET is start
+		stmt.setLong(2, start); // OFFSET is start
 		ResultSet rset = stmt.executeQuery();
 		if (rset != null) {
 			// For SQLite the date is an integer (or a long I suppose).

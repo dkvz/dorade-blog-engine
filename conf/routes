@@ -9,6 +9,7 @@ GET     /                           controllers.Application.index()
 #GET		/articles-starting-from/:articleId			controllers.Application.articlesStartingFrom(articleId: Long, max: Integer = 30)
 #GET		/articles-starting-from/:articleId/:max		controllers.Application.articlesStartingFrom(articleId: Long, max: Integer)
 GET		/articles-starting-from/:articleId		controllers.Application.articlesStartingFrom(articleId: Long, max: Integer ?= 30)
+GET		/article/:articleURL					controllers.Application.article(articleURL: String)
 GET		/test		controllers.Application.test
 
 # Map static resources from the /public folder to the /assets URL path

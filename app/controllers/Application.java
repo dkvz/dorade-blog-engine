@@ -67,14 +67,21 @@ public class Application extends Controller {
     	if (max == null) {
     		max = 30;
     	}
-    	if (articleId > articlesList.size()) {
-    		return badRequest();
-    	}
-    	int start = articleId.intValue();
-    	int end = start + max.intValue();
-    	if (end > articlesList.size()) end = articlesList.size();
+    	//int start = articleId.intValue();
+    	//int end = start + max.intValue();
     	response().setHeader("Access-Control-Allow-Origin", "*");
-    	return ok(Json.toJson(articlesList.subList(start, end)));
+    	try {
+			List<ArticleSummary> list = BlogDataAccess.getInstance().getArticleSummariesDescFromTo(articleId, max);
+			List<Map<String, Object>> listMap = new ArrayList<Map<String, Object>>();
+			for (ArticleSummary art : list) {
+				listMap.add(art.toMap());
+			}
+			return ok(Json.toJson(listMap));
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return internalServerError("Database Error");
+		}
+    	//return ok(Json.toJson(articlesList.subList(start, end)));
     }
     
     public Result article(String articleURL) {
@@ -85,9 +92,9 @@ public class Application extends Controller {
     		if (art != null) {
     			// Let's transform this into JSON.
     			// I'll make a good ol' MAP.
-    			Map<String, String> resMap = new HashMap<String, String>();
-    			
-    			return ok();
+    			Map<String, Object> resMap = new HashMap<String, Object>();
+    			resMap = art.toMap();
+    			return ok(Json.toJson(resMap));
     		} else {
     			return notFound();
     		}
