@@ -76,5 +76,25 @@ public class Application extends Controller {
     	response().setHeader("Access-Control-Allow-Origin", "*");
     	return ok(Json.toJson(articlesList.subList(start, end)));
     }
+    
+    public Result article(String articleURL) {
+    	// Let's use notFound() if the article doesn't exist,
+    	// and internalServerError(String reason) si y a un problème.
+    	try {
+    		Article art = BlogDataAccess.getInstance().getArticleByURL(articleURL);
+    		if (art != null) {
+    			// Let's transform this into JSON.
+    			// I'll make a good ol' MAP.
+    			Map<String, String> resMap = new HashMap<String, String>();
+    			
+    			return ok();
+    		} else {
+    			return notFound();
+    		}
+    	} catch (SQLException ex) {
+    		ex.printStackTrace();
+    		return internalServerError("Database error");
+    	}
+    }
 
 }

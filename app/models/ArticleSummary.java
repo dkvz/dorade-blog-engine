@@ -1,5 +1,6 @@
 package models;
 
+import java.text.*;
 import java.util.*;
 
 public class ArticleSummary {
@@ -11,6 +12,7 @@ public class ArticleSummary {
 	private long id = -1;
 	private String title;
 	private String thumbImage;
+	private String articleURL;
 	private List<ArticleTag> tags;
 	private Date date;
 	private String summary;
@@ -83,6 +85,31 @@ public class ArticleSummary {
 
 	public void setCommentsCount(int commentsCount) {
 		this.commentsCount = commentsCount;
+	}
+
+	public String getArticleURL() {
+		return articleURL;
+	}
+
+	public void setArticleURL(String articleURL) {
+		this.articleURL = articleURL;
+	}
+	
+	public Map<String, Object> toMap() {
+		Map<String, Object> res = new HashMap<String, Object>();
+		// My app expects camel case syntax. Not sure if that's standard.
+		res.put("id", Long.toString(this.getId()));
+		res.put("title", this.getTitle());
+		res.put("thumbImage", this.getThumbImage());
+		// Let's format the date:
+		SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm:ssZ");
+		String formatted = dateFormat.format(this.getDate());
+		res.put("date", formatted);
+		res.put("summary", this.getSummary());
+		res.put("author", this.getAuthor());
+		res.put("commentsCount", Integer.toString(this.getCommentsCount()));
+		res.put("tags", this.getTags());
+		return res;
 	}
 	
 }
