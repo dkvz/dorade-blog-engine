@@ -108,6 +108,7 @@ public class ArticleSummary {
 		res.put("summary", this.getSummary());
 		res.put("author", this.getAuthor());
 		res.put("commentsCount", Integer.toString(this.getCommentsCount()));
+		res.put("articleURL", this.getArticleURL());
 		res.put("tags", this.getTags());
 		return res;
 	}
