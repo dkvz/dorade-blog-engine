@@ -24,15 +24,19 @@ public class BlogDataAccess {
 		User usr = null;
 		DataSource ds = DB.getDataSource();
 		Connection conn = ds.getConnection();
-		PreparedStatement stmt = conn.prepareStatement("SELECT name FROM users WHERE id = ?");
-		stmt.setLong(1, id);
-        ResultSet rset = stmt.executeQuery();
-        if (rset.next()) {
-        	usr = new User();
-            usr.setId(id);
-            usr.setName(rset.getString("name"));
-        }
-        rset.close();
+		try {
+			PreparedStatement stmt = conn.prepareStatement("SELECT name FROM users WHERE id = ?");
+			stmt.setLong(1, id);
+	        ResultSet rset = stmt.executeQuery();
+	        if (rset.next()) {
+	        	usr = new User();
+	            usr.setId(id);
+	            usr.setName(rset.getString("name"));
+	        }
+	        rset.close();
+		} finally {
+			conn.close();
+		}
 		return usr;
 	}
 	
@@ -40,18 +44,22 @@ public class BlogDataAccess {
 		Article ret = null;
 		DataSource ds = DB.getDataSource();
 		Connection conn = ds.getConnection();
-		PreparedStatement stmt = conn.prepareStatement("SELECT * FROM articles WHERE article_url = ?");
-		stmt.setString(1, articleURL);
-		stmt.setMaxRows(1);
-		ResultSet rset = stmt.executeQuery();
-		if (rset != null && rset.next()) {
-			ArticleSummary sum = this.getArticleSummaryFromRset(rset, conn);
-			if (sum.getId() >= 0l) {
-				ret = new Article(sum);
-				ret.setContent(rset.getString("content"));
+		try {
+			PreparedStatement stmt = conn.prepareStatement("SELECT * FROM articles WHERE article_url = ?");
+			stmt.setString(1, articleURL);
+			stmt.setMaxRows(1);
+			ResultSet rset = stmt.executeQuery();
+			if (rset != null && rset.next()) {
+				ArticleSummary sum = this.getArticleSummaryFromRset(rset, conn);
+				if (sum.getId() >= 0l) {
+					ret = new Article(sum);
+					ret.setContent(rset.getString("content"));
+				}
 			}
+			stmt.close();
+		} finally {
+			conn.close();
 		}
-		stmt.close();
 		return ret;
 	}
 	
@@ -70,21 +78,25 @@ public class BlogDataAccess {
 		// I could do this in a single statement but going to do it in two.
 		// I'm using limit and offset, which are supported by postgre and MySQL (normally) but
 		// not most other databases.
-		PreparedStatement stmt = conn.prepareStatement("SELECT id, title, article_url, thumb_image, " +
-				"date, user_id, summary FROM articles " +
-				"ORDER BY id DESC LIMIT ? OFFSET ?");
-		// The comments are not working so comment count is constant 0.
-		stmt.setInt(1, count); // LIMIT clause value
-		stmt.setLong(2, start); // OFFSET is start
-		ResultSet rset = stmt.executeQuery();
-		if (rset != null) {
-			// For SQLite the date is an integer (or a long I suppose).
-			while (rset.next()) {
-				ArticleSummary sum = this.getArticleSummaryFromRset(rset, conn); 
-				res.add(sum);
+		try {
+			PreparedStatement stmt = conn.prepareStatement("SELECT id, title, article_url, thumb_image, " +
+					"date, user_id, summary FROM articles " +
+					"ORDER BY id DESC LIMIT ? OFFSET ?");
+			// The comments are not working so comment count is constant 0.
+			stmt.setInt(1, count); // LIMIT clause value
+			stmt.setLong(2, start); // OFFSET is start
+			ResultSet rset = stmt.executeQuery();
+			if (rset != null) {
+				// For SQLite the date is an integer (or a long I suppose).
+				while (rset.next()) {
+					ArticleSummary sum = this.getArticleSummaryFromRset(rset, conn); 
+					res.add(sum);
+				}
 			}
+			stmt.close();
+		} finally {
+			conn.close();
 		}
-		stmt.close();
 		return res;
 	}
 	
@@ -134,6 +146,22 @@ public class BlogDataAccess {
 		}
 		sum.setTags(artTags);
 		return sum;
+	}
+	
+	public long getArticleCount() throws SQLException {
+		long ret = 0l;
+		DataSource ds = DB.getDataSource();
+		Connection conn = ds.getConnection();
+		try {
+			Statement stmt = conn.createStatement();
+			ResultSet rs = stmt.executeQuery("SELECT count(*) FROM articles");
+			if (rs.next()) {
+				ret = rs.getLong(1);
+			}
+		} finally {
+			conn.close();
+		}
+		return ret;
 	}
 	
 }

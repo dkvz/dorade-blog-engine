@@ -51,12 +51,8 @@ public class Application extends Controller {
     	response().setHeader("Access-Control-Allow-Origin", "*");
     	List<String> test = new ArrayList<String>();
     	try {
-    		User usr = BlogDataAccess.getInstance().getUser(1l);
-    		if (usr != null) {
-    			test.add(usr.getName());
-    		} else {
-    			test.add("Not Found");
-    		}
+    		long count = BlogDataAccess.getInstance().getArticleCount();
+    		test.add(Long.toString(count));
     	} catch (SQLException ex) {
     		System.out.println(ex.toString()); 
     	}
@@ -70,13 +66,20 @@ public class Application extends Controller {
     	//int start = articleId.intValue();
     	//int end = start + max.intValue();
     	response().setHeader("Access-Control-Allow-Origin", "*");
+    	
     	try {
-			List<ArticleSummary> list = BlogDataAccess.getInstance().getArticleSummariesDescFromTo(articleId, max);
-			List<Map<String, Object>> listMap = new ArrayList<Map<String, Object>>();
-			for (ArticleSummary art : list) {
-				listMap.add(art.toMap());
-			}
-			return ok(Json.toJson(listMap));
+    		// Check if we're out of articles for this request:
+        	long count = BlogDataAccess.getInstance().getArticleCount();
+        	if (articleId >= count) {
+        		return notFound();
+        	} else {
+				List<ArticleSummary> list = BlogDataAccess.getInstance().getArticleSummariesDescFromTo(articleId, max);
+				List<Map<String, Object>> listMap = new ArrayList<Map<String, Object>>();
+				for (ArticleSummary art : list) {
+					listMap.add(art.toMap());
+				}
+				return ok(Json.toJson(listMap));
+        	}
 		} catch (SQLException e) {
 			e.printStackTrace();
 			return internalServerError("Database Error");
