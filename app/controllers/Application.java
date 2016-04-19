@@ -90,6 +90,7 @@ public class Application extends Controller {
     public Result article(String articleURL) {
     	// Let's use notFound() if the article doesn't exist,
     	// and internalServerError(String reason) si y a un problème.
+    	response().setHeader("Access-Control-Allow-Origin", "*");
     	try {
     		Article art = BlogDataAccess.getInstance().getArticleByURL(articleURL);
     		if (art != null) {
