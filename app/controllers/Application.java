@@ -11,6 +11,8 @@ import views.html.*;
 import models.*;
 import java.sql.SQLException;
 
+import org.apache.commons.lang3.StringEscapeUtils;
+
 public class Application extends Controller {
 
 //	@Before
@@ -105,6 +107,23 @@ public class Application extends Controller {
     	} catch (SQLException ex) {
     		ex.printStackTrace();
     		return internalServerError("Database error");
+    	}
+    }
+    
+    public Result saveComment() {
+    	final Map<String, String[]> values = request().body().asFormUrlEncoded();
+    	if (values.get("author") != null && values.get("comment") != null) {
+    		// We should use something to transform special chars to HTML.
+    		String author = values.get("author")[0];
+    		String comment = values.get("comment")[0];
+    		author = StringEscapeUtils.escapeHtml4(author);
+    		comment = StringEscapeUtils.escapeHtml4(comment);
+    		// I should also save the IP address of the client.
+    		String clientIP = request().remoteAddress();
+    		
+    		return ok("OK");
+    	} else {
+    		return internalServerError("Missing arguments");
     	}
     }
 
