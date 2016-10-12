@@ -112,7 +112,7 @@ public class Application extends Controller {
     
     public Result saveComment() {
     	final Map<String, String[]> values = request().body().asFormUrlEncoded();
-    	if (values.get("author") != null && values.get("comment") != null) {
+    	if (values.get("author") != null && values.get("comment") != null && values.get("article_id") != null) {
     		// We should use something to transform special chars to HTML.
     		String author = values.get("author")[0];
     		String comment = values.get("comment")[0];
@@ -120,7 +120,19 @@ public class Application extends Controller {
     		comment = StringEscapeUtils.escapeHtml4(comment);
     		// I should also save the IP address of the client.
     		String clientIP = request().remoteAddress();
-    		
+    		try {
+    			Comment commentO = new Comment();
+    			commentO.setAuthor(author);
+    			commentO.setComment(comment);
+    			long artId = Long.parseLong(values.get("article_id")[0]);
+    			commentO.setArticleId(artId);
+    			commentO.setClientIP(clientIP);
+    			BlogDataAccess.getInstance().insertComment(commentO);
+    		} catch (SQLException ex) {
+    			return internalServerError("Database error");
+    		} catch (NumberFormatException ex) {
+    			return internalServerError("Could not parse the article ID for this comment");
+    		}
     		return ok("OK");
     	} else {
     		return internalServerError("Missing arguments");

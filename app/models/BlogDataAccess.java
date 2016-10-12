@@ -164,4 +164,26 @@ public class BlogDataAccess {
 		return ret;
 	}
 	
+	public void insertComment(Comment comment) throws SQLException {
+		DataSource ds = DB.getDataSource();
+		Connection conn = ds.getConnection();
+		try {
+			PreparedStatement stmt = conn.prepareStatement("INSERT INTO comments " +
+					"(article_id, author, comment, date, client_ip) VALUES (?, ?, ?, ?, ?)");
+			stmt.setLong(1, comment.getArticleId());
+			stmt.setString(2, comment.getAuthor());
+			stmt.setString(3, comment.getComment());
+			if (comment.getDate() == null) {
+				java.util.Date now = new java.util.Date();
+				comment.setDate(now);
+			}
+			long stamp = comment.getDate().getTime() / 1000;
+			stmt.setLong(4, stamp);
+			stmt.setString(5, comment.getClientIP());
+			stmt.executeUpdate();
+		} finally {
+			conn.close();
+		}
+	}
+	
 }
