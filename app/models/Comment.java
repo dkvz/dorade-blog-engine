@@ -1,5 +1,6 @@
 package models;
 
+import java.text.*;
 import java.util.*;
 
 public class Comment {
@@ -10,6 +11,19 @@ public class Comment {
 	private long articleId;
 	private Date date;
 	private String clientIP;
+	
+	public Map<String, Object> toReducedMap() {
+		Map<String, Object> res = new HashMap<String, Object>();
+		if (this.id >= 0) {
+			res.put("id", Long.toString(this.getId()));
+		}
+		res.put("author", this.getAuthor());
+		SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm:ssZ");
+		String formatted = dateFormat.format(this.getDate());
+		res.put("date", formatted);
+		res.put("comment", this.getComment());
+		return res;
+	}
 	
 	public String getComment() {
 		return comment;

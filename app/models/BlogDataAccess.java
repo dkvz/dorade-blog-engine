@@ -63,6 +63,38 @@ public class BlogDataAccess {
 		return ret;
 	}
 	
+	public List<Comment> getCommentsFromTo(long start, int count, long articleId) throws SQLException {
+		List<Comment> res = new ArrayList<Comment>();
+		if (start < 0) start = 0;
+		DataSource ds = DB.getDataSource();
+		Connection conn = ds.getConnection();
+		// I could do this in a single statement but going to do it in two.
+		// I'm using limit and offset, which are supported by postgre and MySQL (normally) but
+		// not most other databases.
+		try {
+			PreparedStatement stmt = conn.prepareStatement("SELECT id, article_id, author, " +
+					"comment, date WHERE article_id = ? ORDER BY id ASC " +
+					"LIMIT ? OFFSET ?");
+			stmt.setInt(1, count);
+			stmt.setLong(2, start);
+			ResultSet rset = stmt.executeQuery();
+			if (rset != null) {
+				while(rset.next()) {
+					Comment comment = new Comment();
+					comment.setAuthor(rset.getString("author"));
+					comment.setComment(rset.getString("comment"));
+					// Parse the date, which is a timestamp.
+					comment.setDate(new java.util.Date(rset.getLong("date") * 1000));
+					res.add(comment);
+				}
+			}
+			stmt.close();
+		} finally {
+			conn.close();
+		}
+		return null;
+	}
+	
 	/**
 	 * Though the numbering of the "id" of article summaries starts at 1,
 	 * this method expects earliest "start" value to be 0.
@@ -146,6 +178,22 @@ public class BlogDataAccess {
 		}
 		sum.setTags(artTags);
 		return sum;
+	}
+	
+	public long getCommentCount() throws SQLException {
+		long ret = 0l;
+		DataSource ds = DB.getDataSource();
+		Connection conn = ds.getConnection();
+		try {
+			Statement stmt = conn.createStatement();
+			ResultSet rs = stmt.executeQuery("SELECT count(*) FROM comments");
+			if (rs.next()) {
+				ret = rs.getLong(1);
+			}
+		} finally {
+			conn.close();
+		}
+		return ret;
 	}
 	
 	public long getArticleCount() throws SQLException {

@@ -14,6 +14,8 @@ import java.sql.SQLException;
 import org.apache.commons.lang3.StringEscapeUtils;
 
 public class Application extends Controller {
+	
+	public static final int MAX_COMMENT_LENGTH = 2000;
 
 //	@Before
 //	public static void setCORS() {
@@ -61,8 +63,38 @@ public class Application extends Controller {
     	return ok(Json.toJson(test));
     }
     
+    public Result commentsStartingFrom(Long articleId, Integer start, Integer max) {
+    	// See articlesStartingFrom for more details, this is more or less
+    	// a copy paste of that method.
+    	if (max == null) {
+    		max = 30;
+    	} else if (max > 50) {
+    		max = 50;
+    	}
+    	response().setHeader("Access-Control-Allow-Origin", "*");
+    	
+    	try {
+    		long count = BlogDataAccess.getInstance().getCommentCount();
+        	if (start >= count) {
+        		return notFound();
+        	} else {
+        		List<Comment> list = BlogDataAccess.getInstance().getCommentsFromTo(start, max, articleId);
+				List<Map<String, Object>> listMap = new ArrayList<Map<String, Object>>();
+				for (Comment art : list) {
+					listMap.add(art.toReducedMap());
+				}
+				return ok(Json.toJson(listMap));
+        	}
+    	} catch (SQLException ex) {
+    		ex.printStackTrace();
+    		return internalServerError("Database error");
+    	}
+    }
+    
     public Result articlesStartingFrom(Long articleId, Integer max) {
     	if (max == null) {
+    		max = 30;
+    	} else if (max > 100) {
     		max = 30;
     	}
     	//int start = articleId.intValue();
@@ -123,6 +155,10 @@ public class Application extends Controller {
     		try {
     			Comment commentO = new Comment();
     			commentO.setAuthor(author);
+    			// Reduce comment to some arbitrary max length.
+    			if (comment.length() > Application.MAX_COMMENT_LENGTH) {
+    				comment = comment.substring(0, Application.MAX_COMMENT_LENGTH);
+    			}
     			commentO.setComment(comment);
     			long artId = Long.parseLong(values.get("article_id")[0]);
     			commentO.setArticleId(artId);
