@@ -73,10 +73,11 @@ public class BlogDataAccess {
 		// not most other databases.
 		try {
 			PreparedStatement stmt = conn.prepareStatement("SELECT id, article_id, author, " +
-					"comment, date WHERE article_id = ? ORDER BY id ASC " +
+					"comment, date FROM comments WHERE article_id = ? ORDER BY id ASC " +
 					"LIMIT ? OFFSET ?");
-			stmt.setInt(1, count);
-			stmt.setLong(2, start);
+			stmt.setLong(1, articleId);
+			stmt.setInt(2, count);
+			stmt.setLong(3, start);
 			ResultSet rset = stmt.executeQuery();
 			if (rset != null) {
 				while(rset.next()) {
@@ -92,7 +93,7 @@ public class BlogDataAccess {
 		} finally {
 			conn.close();
 		}
-		return null;
+		return res;
 	}
 	
 	/**
