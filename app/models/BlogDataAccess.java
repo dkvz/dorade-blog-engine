@@ -63,7 +63,7 @@ public class BlogDataAccess {
 		return ret;
 	}
 	
-	public List<Comment> getCommentsFromTo(long start, int count, long articleId) throws SQLException {
+	public List<Comment> getCommentsFromTo(long start, int count, String articleURL) throws SQLException {
 		List<Comment> res = new ArrayList<Comment>();
 		if (start < 0) start = 0;
 		DataSource ds = DB.getDataSource();
@@ -72,10 +72,10 @@ public class BlogDataAccess {
 		// I'm using limit and offset, which are supported by postgre and MySQL (normally) but
 		// not most other databases.
 		try {
-			PreparedStatement stmt = conn.prepareStatement("SELECT id, article_id, author, " +
-					"comment, date FROM comments WHERE article_id = ? ORDER BY id ASC " +
+			PreparedStatement stmt = conn.prepareStatement("SELECT comments.id, comments.article_id, comments.author, " +
+					"comments.comment, comments.date FROM comments, articles WHERE articles.article_url = ? AND articles.id = comments.article_id ORDER BY comments.id ASC " +
 					"LIMIT ? OFFSET ?");
-			stmt.setLong(1, articleId);
+			stmt.setString(1, articleURL);
 			stmt.setInt(2, count);
 			stmt.setLong(3, start);
 			ResultSet rset = stmt.executeQuery();

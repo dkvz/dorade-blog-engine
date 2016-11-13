@@ -63,7 +63,7 @@ public class Application extends Controller {
     	return ok(Json.toJson(test));
     }
     
-    public Result commentsStartingFrom(Long articleId, Integer start, Integer max) {
+    public Result commentsStartingFrom(String articleURL, Integer start, Integer max) {
     	// See articlesStartingFrom for more details, this is more or less
     	// a copy paste of that method.
     	if (max == null) {
@@ -78,7 +78,7 @@ public class Application extends Controller {
         	if (start >= count) {
         		return notFound();
         	} else {
-        		List<Comment> list = BlogDataAccess.getInstance().getCommentsFromTo(start, max, articleId);
+        		List<Comment> list = BlogDataAccess.getInstance().getCommentsFromTo(start, max, articleURL);
 				List<Map<String, Object>> listMap = new ArrayList<Map<String, Object>>();
 				for (Comment art : list) {
 					listMap.add(art.toReducedMap());
