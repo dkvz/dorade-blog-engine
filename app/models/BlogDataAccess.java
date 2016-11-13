@@ -133,6 +133,28 @@ public class BlogDataAccess {
 		return res;
 	}
 	
+	public long getArticleIdFromUrl(String url) throws SQLException {
+		long res = -1;
+		DataSource ds = DB.getDataSource();
+		Connection conn = ds.getConnection();
+		try {
+			PreparedStatement stmt = conn.prepareStatement("SELECT id FROM articles WHERE article_url = ?");
+			// The comments are not working so comment count is constant 0.
+			stmt.setString(1, url);
+			ResultSet rset = stmt.executeQuery();
+			if (rset != null) {
+				// For SQLite the date is an integer (or a long I suppose).
+				while (rset.next()) {
+					res = rset.getLong("id");
+				}
+			}
+			stmt.close();
+		} finally {
+			conn.close();
+		}
+		return res;
+	}
+	
 	private ArticleSummary getArticleSummaryFromRset(ResultSet rset, Connection conn) throws SQLException {
 		ArticleSummary sum = new ArticleSummary();
 		// Get the author:

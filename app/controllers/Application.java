@@ -143,8 +143,9 @@ public class Application extends Controller {
     }
     
     public Result saveComment() {
+    	response().setHeader("Access-Control-Allow-Origin", "*");
     	final Map<String, String[]> values = request().body().asFormUrlEncoded();
-    	if (values.get("author") != null && values.get("comment") != null && values.get("article_id") != null) {
+    	if (values.get("author") != null && values.get("comment") != null && (values.get("article_id") != null || values.get("articleurl") != null)) {
     		// We should use something to transform special chars to HTML.
     		String author = values.get("author")[0];
     		String comment = values.get("comment")[0];
@@ -160,7 +161,13 @@ public class Application extends Controller {
     				comment = comment.substring(0, Application.MAX_COMMENT_LENGTH);
     			}
     			commentO.setComment(comment);
-    			long artId = Long.parseLong(values.get("article_id")[0]);
+    			long artId = -1;
+    			if (values.get("article_id") != null) {
+    				artId = Long.parseLong(values.get("article_id")[0]);
+    			} else {
+    				artId = BlogDataAccess.getInstance().getArticleIdFromUrl(values.get("articleurl")[0]);
+    				if (artId < 0) throw new NumberFormatException();
+    			}
     			commentO.setArticleId(artId);
     			commentO.setClientIP(clientIP);
     			BlogDataAccess.getInstance().insertComment(commentO);
