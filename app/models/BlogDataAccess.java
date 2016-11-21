@@ -144,7 +144,7 @@ public class BlogDataAccess {
 			ResultSet rset = stmt.executeQuery();
 			if (rset != null) {
 				// For SQLite the date is an integer (or a long I suppose).
-				while (rset.next()) {
+				if (rset.next()) {
 					res = rset.getLong("id");
 				}
 			}
