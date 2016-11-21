@@ -56,7 +56,7 @@ public class Application extends Controller {
     	response().setHeader("Access-Control-Allow-Origin", "*");
     	List<String> test = new ArrayList<String>();
     	try {
-    		long count = BlogDataAccess.getInstance().getArticleCount();
+    		long count = BlogDataAccess.getInstance().getArticleCount(false);
     		test.add(Long.toString(count));
     	} catch (SQLException ex) {
     		System.out.println(ex.toString()); 
@@ -75,7 +75,8 @@ public class Application extends Controller {
     	response().setHeader("Access-Control-Allow-Origin", "*");
     	
     	try {
-    		long count = BlogDataAccess.getInstance().getCommentCount();
+    		long articleID = BlogDataAccess.getInstance().getArticleIdFromUrl(articleURL);
+    		long count = BlogDataAccess.getInstance().getCommentCount(articleID);
         	if (start >= count) {
         		return notFound();
         	} else {
@@ -104,7 +105,7 @@ public class Application extends Controller {
     	
     	try {
     		// Check if we're out of articles for this request:
-        	long count = BlogDataAccess.getInstance().getArticleCount();
+        	long count = BlogDataAccess.getInstance().getArticleCount(true);
         	if (articleId >= count) {
         		return notFound();
         	} else {

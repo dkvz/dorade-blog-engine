@@ -114,6 +114,7 @@ public class BlogDataAccess {
 		try {
 			PreparedStatement stmt = conn.prepareStatement("SELECT id, title, article_url, thumb_image, " +
 					"date, user_id, summary FROM articles " +
+					"WHERE published = '1' " +
 					"ORDER BY id DESC LIMIT ? OFFSET ?");
 			// The comments are not working so comment count is constant 0.
 			stmt.setInt(1, count); // LIMIT clause value
@@ -173,11 +174,14 @@ public class BlogDataAccess {
 			ex.printStackTrace();
 		}
 		sum.setAuthor(author);
-		sum.setCommentsCount(0);
+		sum.setId(rset.getLong("id"));
+		// Find comment count:
+		long comCount = this.getCommentCount(sum.getId());
+		if (comCount < 0) comCount = 0;
+		sum.setCommentsCount(comCount);
 		long dateVal = rset.getLong("date");
 		java.util.Date date = new java.util.Date(dateVal * 1000);
 		sum.setDate(date);
-		sum.setId(rset.getLong("id"));
 		sum.setSummary(rset.getString("summary"));
 		sum.setArticleURL(rset.getString("article_url"));
 		sum.setThumbImage(rset.getString("thumb_image"));
@@ -203,13 +207,14 @@ public class BlogDataAccess {
 		return sum;
 	}
 	
-	public long getCommentCount() throws SQLException {
+	public long getCommentCount(long articleID) throws SQLException {
 		long ret = 0l;
 		DataSource ds = DB.getDataSource();
 		Connection conn = ds.getConnection();
 		try {
-			Statement stmt = conn.createStatement();
-			ResultSet rs = stmt.executeQuery("SELECT count(*) FROM comments");
+			PreparedStatement stmt = conn.prepareStatement("SELECT count(*) FROM comments WHERE article_id = ?");
+			stmt.setLong(1, articleID);
+			ResultSet rs = stmt.executeQuery();
 			if (rs.next()) {
 				ret = rs.getLong(1);
 			}
@@ -219,13 +224,18 @@ public class BlogDataAccess {
 		return ret;
 	}
 	
-	public long getArticleCount() throws SQLException {
+	public long getArticleCount(boolean published) throws SQLException {
 		long ret = 0l;
 		DataSource ds = DB.getDataSource();
 		Connection conn = ds.getConnection();
 		try {
 			Statement stmt = conn.createStatement();
-			ResultSet rs = stmt.executeQuery("SELECT count(*) FROM articles");
+			ResultSet rs;
+			if (published) {	
+				rs = stmt.executeQuery("SELECT count(*) FROM articles WHERE published = '1'");
+			} else {
+				rs = stmt.executeQuery("SELECT count(*) FROM articles");
+			}
 			if (rs.next()) {
 				ret = rs.getLong(1);
 			}

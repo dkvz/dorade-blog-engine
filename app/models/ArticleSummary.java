@@ -17,7 +17,7 @@ public class ArticleSummary {
 	private Date date;
 	private String summary;
 	private String author;
-	private int commentsCount = 0;
+	private long commentsCount = 0;
 	
 	public ArticleSummary() {
 		this.tags = new ArrayList<ArticleTag>();
@@ -79,11 +79,11 @@ public class ArticleSummary {
 		this.author = author;
 	}
 
-	public int getCommentsCount() {
+	public long getCommentsCount() {
 		return commentsCount;
 	}
 
-	public void setCommentsCount(int commentsCount) {
+	public void setCommentsCount(long commentsCount) {
 		this.commentsCount = commentsCount;
 	}
 
@@ -107,7 +107,7 @@ public class ArticleSummary {
 		res.put("date", formatted);
 		res.put("summary", this.getSummary());
 		res.put("author", this.getAuthor());
-		res.put("commentsCount", Integer.toString(this.getCommentsCount()));
+		res.put("commentsCount", Long.toString(this.getCommentsCount()));
 		res.put("articleURL", this.getArticleURL());
 		res.put("tags", this.getTags());
 		return res;
