@@ -56,7 +56,7 @@ public class Application extends Controller {
     	response().setHeader("Access-Control-Allow-Origin", "*");
     	List<String> test = new ArrayList<String>();
     	try {
-    		long count = BlogDataAccess.getInstance().getArticleCount(false);
+    		long count = BlogDataAccess.getInstance().getArticleCount(false, null);
     		test.add(Long.toString(count));
     	} catch (SQLException ex) {
     		System.out.println(ex.toString()); 
@@ -93,7 +93,7 @@ public class Application extends Controller {
     	}
     }
     
-    public Result articlesStartingFrom(Long articleId, Integer max) {
+    public Result articlesStartingFrom(Long articleId, Integer max, String tags) {
     	if (max == null) {
     		max = 30;
     	} else if (max > 100) {
@@ -105,11 +105,11 @@ public class Application extends Controller {
     	
     	try {
     		// Check if we're out of articles for this request:
-        	long count = BlogDataAccess.getInstance().getArticleCount(true);
+        	long count = BlogDataAccess.getInstance().getArticleCount(true, tags);
         	if (articleId >= count) {
         		return notFound();
         	} else {
-				List<ArticleSummary> list = BlogDataAccess.getInstance().getArticleSummariesDescFromTo(articleId, max);
+				List<ArticleSummary> list = BlogDataAccess.getInstance().getArticleSummariesDescFromTo(articleId, max, tags);
 				List<Map<String, Object>> listMap = new ArrayList<Map<String, Object>>();
 				for (ArticleSummary art : list) {
 					listMap.add(art.toMap());

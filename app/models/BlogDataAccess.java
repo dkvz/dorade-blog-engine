@@ -103,7 +103,7 @@ public class BlogDataAccess {
 	 * @param count
 	 * @return
 	 */
-	public List<ArticleSummary> getArticleSummariesDescFromTo(long start, int count) throws SQLException {
+	public List<ArticleSummary> getArticleSummariesDescFromTo(long start, int count, String tags) throws SQLException {
 		List<ArticleSummary> res = new ArrayList<ArticleSummary>();
 		if (start < 0) start = 0;
 		DataSource ds = DB.getDataSource();
@@ -112,13 +112,33 @@ public class BlogDataAccess {
 		// I'm using limit and offset, which are supported by postgre and MySQL (normally) but
 		// not most other databases.
 		try {
-			PreparedStatement stmt = conn.prepareStatement("SELECT id, title, article_url, thumb_image, " +
-					"date, user_id, summary FROM articles " +
-					"WHERE published = '1' " +
-					"ORDER BY id DESC LIMIT ? OFFSET ?");
-			// The comments are not working so comment count is constant 0.
-			stmt.setInt(1, count); // LIMIT clause value
-			stmt.setLong(2, start); // OFFSET is start
+			String sql = "SELECT articles.id, articles.title, " +
+					"articles.article_url, articles.thumb_image, articles.date, " +
+					"articles.user_id, articles.summary FROM articles ";
+			String[] tagsA = null;
+			if (tags != null && !tags.isEmpty()) {
+				sql = sql.concat(", article_tags, tags WHERE articles.published = '1'");
+				tagsA = tags.split(",");
+				for (int a = 0; a < tagsA.length; a++) {
+					sql = sql.concat(" AND tags.name = ?");
+				}
+				// Adding the join code:
+				sql = sql.concat(" AND (tags.id = article_tags.tag_id AND " +
+						"article_tags.article_id = articles.id) ");
+			} else {
+				sql = sql.concat("WHERE articles.published = '1' ");
+			}
+			sql = sql.concat("ORDER BY articles.id DESC LIMIT ? OFFSET ?");
+			
+			PreparedStatement stmt = conn.prepareStatement(sql);
+			int pos = 0;
+			if (tagsA != null && tagsA.length > 0) {
+				for (pos = 0; pos < tagsA.length; pos++) {
+					stmt.setString(pos + 1, tagsA[pos]);
+				}
+			}
+			stmt.setInt(pos + 1, count); // LIMIT clause value
+			stmt.setLong(pos + 2, start); // OFFSET is start
 			ResultSet rset = stmt.executeQuery();
 			if (rset != null) {
 				// For SQLite the date is an integer (or a long I suppose).
@@ -189,7 +209,7 @@ public class BlogDataAccess {
 		// Get the tags.
 		List<ArticleTag> artTags = new ArrayList<ArticleTag>();
 		try {
-			PreparedStatement st = conn.prepareStatement("SELECT tags.name FROM article_tags, tags, articles " +
+			PreparedStatement st = conn.prepareStatement("SELECT tags.name, tags.id FROM article_tags, tags, articles " +
 					"WHERE article_tags.article_id = ? AND article_tags.tag_id = tags.id");
 			st.setLong(1, sum.getId());
 			ResultSet tags = st.executeQuery();
@@ -224,18 +244,61 @@ public class BlogDataAccess {
 		return ret;
 	}
 	
-	public long getArticleCount(boolean published) throws SQLException {
+	/**
+	 * getArticleCount returns the number of articles, marked as published or not
+	 * with the given tag list (comma separated)
+	 * @param published if true, will look for articles marked as published only
+	 * @param tags comma separated String of tags for this article ; set to empty String or null to disable
+	 * @return the amount of articles corresponding to the criteria (long)
+	 * @throws SQLException
+	 */
+	public long getArticleCount(boolean published, String tags) throws SQLException {
 		long ret = 0l;
 		DataSource ds = DB.getDataSource();
 		Connection conn = ds.getConnection();
 		try {
-			Statement stmt = conn.createStatement();
+			PreparedStatement stmt = null;
+			String sql = "SELECT count(*) FROM articles";
 			ResultSet rs;
-			if (published) {	
-				rs = stmt.executeQuery("SELECT count(*) FROM articles WHERE published = '1'");
+			String[] tagsA = null;
+			if (tags != null && !tags.isEmpty()) {
+				tagsA = tags.split(",");
+				sql = sql.concat(", tags, article_tags");
+				if (published) {	
+					sql = sql.concat(" WHERE articles.published = 1");
+				}
+				boolean where = false;
+				for (int a = 0; a < tagsA.length; a++) {
+					if (!where && !published) {
+						sql = sql.concat(" WHERE");
+						where = true;
+					} else {
+						sql = sql.concat(" AND");
+					}
+					sql = sql.concat(" tags.name = ?");
+				}
+				// Adding the join code:
+				sql = sql.concat(" AND (tags.id = article_tags.tag_id AND " +
+						"article_tags.article_id = articles.id)");
 			} else {
-				rs = stmt.executeQuery("SELECT count(*) FROM articles");
+				if (published) {	
+					sql = sql.concat(" WHERE articles.published = 1");
+				}
 			}
+			
+			stmt = conn.prepareStatement(sql);
+			// Set the parameters of the statement:
+			if (tagsA != null) {
+				for (int i = 1; i <= tagsA.length; i++) {
+					// I originally meant the list to use long as index
+					// but arrays use int, so yeah... I'm using int.
+					// F*** consistency.
+					stmt.setString(i, tagsA[i - 1]);
+				}
+			}
+			
+			// Set rs somewhere around here
+			rs = stmt.executeQuery();
 			if (rs.next()) {
 				ret = rs.getLong(1);
 			}
