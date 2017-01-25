@@ -209,7 +209,7 @@ public class BlogDataAccess {
 		// Get the tags.
 		List<ArticleTag> artTags = new ArrayList<ArticleTag>();
 		try {
-			PreparedStatement st = conn.prepareStatement("SELECT tags.name, tags.id FROM article_tags, tags, articles " +
+			PreparedStatement st = conn.prepareStatement("SELECT tags.name, tags.id FROM article_tags, tags " +
 					"WHERE article_tags.article_id = ? AND article_tags.tag_id = tags.id");
 			st.setLong(1, sum.getId());
 			ResultSet tags = st.executeQuery();
