@@ -12,6 +12,7 @@ GET		/articles-starting-from/:articleId		controllers.Application.articlesStartin
 GET		/article/:articleURL					controllers.Application.article(articleURL: String)
 GET		/comments-starting-from/:articleURL				controllers.Application.commentsStartingFrom(articleURL: String, start: Integer ?= 0, max: Integer ?= 30) 
 GET		/test		controllers.Application.test
+GET		/tags		controllers.Application.tags
 POST	/comments	controllers.Application.saveComment
 
 # Map static resources from the /public folder to the /assets URL path

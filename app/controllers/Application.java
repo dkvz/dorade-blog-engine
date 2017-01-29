@@ -144,6 +144,30 @@ public class Application extends Controller {
     	}
     }
     
+    /**
+     * tags - Returns all the tags in database (no limit)
+     * Wait why am I writing Javadoc now?
+     * @return JSON array of all the tags made into maps; 
+     * notFound if no tags are in database
+     */
+    public Result tags() {
+    	try {
+    		List<ArticleTag> tags = BlogDataAccess.getInstance().getAllTags();
+    		if (tags != null && tags.size() > 0) {
+    			List<Map<String, Object>> listMap = new ArrayList<Map<String, Object>>();
+				for (ArticleTag tag : tags) {
+					listMap.add(tag.toMap());
+				}
+				return ok(Json.toJson(listMap));
+    		} else {
+    			return notFound();
+    		}
+    	} catch (SQLException ex) {
+    		ex.printStackTrace();
+    		return internalServerError("Database error");
+    	}
+    }
+    
     public Result saveComment() {
     	response().setHeader("Access-Control-Allow-Origin", "*");
     	final Map<String, String[]> values = request().body().asFormUrlEncoded();

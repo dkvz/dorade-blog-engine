@@ -209,7 +209,7 @@ public class BlogDataAccess {
 		// Get the tags.
 		List<ArticleTag> artTags = new ArrayList<ArticleTag>();
 		try {
-			PreparedStatement st = conn.prepareStatement("SELECT tags.name, tags.id FROM article_tags, tags " +
+			PreparedStatement st = conn.prepareStatement("SELECT tags.name, tags.id, tags.main_tag FROM article_tags, tags " +
 					"WHERE article_tags.article_id = ? AND article_tags.tag_id = tags.id");
 			st.setLong(1, sum.getId());
 			ResultSet tags = st.executeQuery();
@@ -217,6 +217,12 @@ public class BlogDataAccess {
 				ArticleTag t = new ArticleTag();
 				t.setId(tags.getLong("id"));
 				t.setName(tags.getString("name"));
+				int mainT = tags.getInt("main_tag");
+				if (mainT > 0) {
+					t.setMainTag(true);
+				} else {
+					t.setMainTag(false);
+				}
 				artTags.add(t);
 			}
 			st.close();
@@ -225,6 +231,33 @@ public class BlogDataAccess {
 		}
 		sum.setTags(artTags);
 		return sum;
+	}
+	
+	public List<ArticleTag> getAllTags() throws SQLException {
+		List<ArticleTag> ret = null;
+		DataSource ds = DB.getDataSource();
+		Connection conn = ds.getConnection();
+		try {
+			Statement stmt = conn.createStatement();
+			ResultSet rs = stmt.executeQuery("SELECT * FROM tags");
+			ret = new ArrayList<ArticleTag>();
+			while (rs.next()) {
+				ArticleTag t = new ArticleTag();
+				t.setId(rs.getLong("id"));
+				t.setName(rs.getString("name"));
+				int mainT = rs.getInt("main_tag");
+				if (mainT > 0) {
+					t.setMainTag(true);
+				} else {
+					t.setMainTag(false);
+				}
+				ret.add(t);
+			}
+			rs.close();
+		} finally {
+			conn.close();
+		}
+		return ret;
 	}
 	
 	public long getCommentCount(long articleID) throws SQLException {
