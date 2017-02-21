@@ -151,6 +151,7 @@ public class Application extends Controller {
      * notFound if no tags are in database
      */
     public Result tags() {
+        response().setHeader("Access-Control-Allow-Origin", "*");
     	try {
     		List<ArticleTag> tags = BlogDataAccess.getInstance().getAllTags();
     		if (tags != null && tags.size() > 0) {
