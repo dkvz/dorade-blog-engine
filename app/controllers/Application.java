@@ -216,5 +216,36 @@ public class Application extends Controller {
     		return internalServerError("Missing arguments");
     	}
     }
+    
+    /**
+     * sitemap - Get a XML sitemap with all the articles.
+     * I may not change the mime type to be XML though. 
+     * @param articlesRoot the root URL (without http:// and trailing /) for your articles
+     * @return
+     */
+    public Result sitemap(String articlesRoot) {
+    	response().setHeader("Access-Control-Allow-Origin", "*");
+    	try {
+    		// We should have a separate call for this, as "max" is mandatory here and 
+    		// I have to set it to some large value for this to work (since it's put into a 
+    		// LIMIT statement).
+    		List<ArticleSummary> articles = BlogDataAccess.getInstance().getArticleSummariesDescFromTo(1, Integer.MAX_VALUE, null);
+    		String sitemap = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
+	    	sitemap = sitemap.concat("<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">\n");
+	    	String baseRoot = "http://" + articlesRoot + "/";
+    		if (articles != null && articles.size() > 0) {
+		    	for (ArticleSummary sum : articles) {
+		    		sitemap = sitemap.concat("\t<url>\n");
+		    		sitemap = sitemap.concat("\t\t<loc>" + baseRoot.concat(sum.getArticleURL()) + "</loc>\n");
+		    		sitemap = sitemap.concat("\t</url>\n");
+		    	}
+    		}
+    		sitemap = sitemap.concat("</urlset>");
+    		return ok(sitemap);
+    	} catch (SQLException ex) {
+    		ex.printStackTrace();
+    		return internalServerError("Database error");
+    	}
+    }
 
 }

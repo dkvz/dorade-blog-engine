@@ -109,7 +109,7 @@ public class BlogDataAccess {
 		DataSource ds = DB.getDataSource();
 		Connection conn = ds.getConnection();
 		// I could do this in a single statement but going to do it in two.
-		// I'm using limit and offset, which are supported by postgre and MySQL (normally) but
+		// I'm using limit and offset, which are supported by PostgreSQL and MySQL (normally) but
 		// not most other databases.
 		try {
 			String sql = "SELECT articles.id, articles.title, " +
