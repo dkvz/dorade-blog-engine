@@ -8,7 +8,8 @@ GET     /                           controllers.Application.index()
 # Test page for limited list
 #GET		/articles-starting-from/:articleId			controllers.Application.articlesStartingFrom(articleId: Long, max: Integer = 30)
 #GET		/articles-starting-from/:articleId/:max		controllers.Application.articlesStartingFrom(articleId: Long, max: Integer)
-GET		/articles-starting-from/:articleId		controllers.Application.articlesStartingFrom(articleId: Long, max: Integer ?= 30, tags: String ?= "")
+GET		/articles-starting-from/:articleId		controllers.Application.articlesStartingFrom(articleId: Long, max: Integer ?= 30, tags: String ?= "", order: String ?= "desc")
+GET		/shorts-starting-from/:articleId		controllers.Application.shortsStartingFrom(articleId: Long, max: Integer ?= 30, tags: String ?= "", order: String ?= "desc")
 GET		/article/:articleURL					controllers.Application.article(articleURL: String)
 GET		/comments-starting-from/:articleURL				controllers.Application.commentsStartingFrom(articleURL: String, start: Integer ?= 0, max: Integer ?= 30) 
 GET		/test		controllers.Application.test

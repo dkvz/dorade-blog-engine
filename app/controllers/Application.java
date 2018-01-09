@@ -93,23 +93,20 @@ public class Application extends Controller {
     	}
     }
     
-    public Result articlesStartingFrom(Long articleId, Integer max, String tags) {
+    public Result articlesStartingFrom(Long articleId, Integer max, String tags, String order) {
     	if (max == null) {
     		max = 30;
     	} else if (max > 100) {
     		max = 30;
     	}
-    	//int start = articleId.intValue();
-    	//int end = start + max.intValue();
     	response().setHeader("Access-Control-Allow-Origin", "*");
-    	
     	try {
     		// Check if we're out of articles for this request:
         	long count = BlogDataAccess.getInstance().getArticleCount(true, tags);
         	if (articleId >= count) {
         		return notFound();
         	} else {
-				List<ArticleSummary> list = BlogDataAccess.getInstance().getArticleSummariesDescFromTo(articleId, max, tags);
+				List<ArticleSummary> list = BlogDataAccess.getInstance().getArticleSummariesFromTo(articleId, max, tags, order);
 				List<Map<String, Object>> listMap = new ArrayList<Map<String, Object>>();
 				for (ArticleSummary art : list) {
 					listMap.add(art.toMap());
@@ -121,6 +118,33 @@ public class Application extends Controller {
 			return internalServerError("Database Error");
 		}
     	//return ok(Json.toJson(articlesList.subList(start, end)));
+    }
+    
+    public Result shortsStartingFrom(Long articleId, Integer max, String tags, String order) {
+    	// This should be refactored.
+    	if (max == null) {
+    		max = 30;
+    	} else if (max > 100) {
+    		max = 30;
+    	}
+    	response().setHeader("Access-Control-Allow-Origin", "*");
+    	try {
+    		// Check if we're out of articles for this request:
+        	long count = BlogDataAccess.getInstance().getShortCount(true, tags);
+        	if (articleId >= count) {
+        		return notFound();
+        	} else {
+				List<Article> list = BlogDataAccess.getInstance().getShortsFromTo(articleId, max, tags, order);
+				List<Map<String, Object>> listMap = new ArrayList<Map<String, Object>>();
+				for (Article art : list) {
+					listMap.add(art.toMap());
+				}
+				return ok(Json.toJson(listMap));
+        	}
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return internalServerError("Database Error");
+		}
     }
     
     public Result article(String articleURL) {
@@ -229,10 +253,10 @@ public class Application extends Controller {
     		// We should have a separate call for this, as "max" is mandatory here and 
     		// I have to set it to some large value for this to work (since it's put into a 
     		// LIMIT statement).
-    		List<ArticleSummary> articles = BlogDataAccess.getInstance().getArticleSummariesDescFromTo(1, Integer.MAX_VALUE, null);
+    		List<ArticleSummary> articles = BlogDataAccess.getInstance().getArticleSummariesDescFromTo(0, Integer.MAX_VALUE, null);
     		String sitemap = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
 	    	sitemap = sitemap.concat("<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">\n");
-	    	String baseRoot = "http://" + articlesRoot + "/";
+	    	String baseRoot = "https://" + articlesRoot + "/";
     		if (articles != null && articles.size() > 0) {
 		    	for (ArticleSummary sum : articles) {
 		    		sitemap = sitemap.concat("\t<url>\n");

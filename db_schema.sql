@@ -16,14 +16,15 @@ CREATE TABLE `comments` (
   `client_ip` TEXT
 );
 CREATE TABLE "articles" (
-	`id`	INTEGER PRIMARY KEY AUTOINCREMENT,
-	`title`	TEXT,
-	`article_url`	TEXT UNIQUE,
-	`thumb_image`	TEXT,
-	`date`	INTEGER,
-	`user_id`	INTEGER,
-	`summary`	TEXT,
-	`content`	TEXT
+	`id` INTEGER PRIMARY KEY AUTOINCREMENT, 
+	`title` TEXT, `article_url` NUMERIC UNIQUE, 
+	`thumb_image` TEXT, 
+	`date` INTEGER, 
+	`user_id` INTEGER, 
+	`summary` TEXT, 
+	`content` TEXT, 
+	`published` INTEGER NOT NULL DEFAULT 1,
+	`short` INTEGER NOT NULL DEFAULT 0
 );
 CREATE TABLE `article_tags` (
 	`article_id`	INTEGER,
