@@ -63,6 +63,24 @@ public class BlogDataAccess {
 		return ret;
 	}
 	
+	public Article getArticleById(long id) throws SQLException {
+        Article ret = null;
+        DataSource ds = DB.getDataSource();
+		Connection conn = ds.getConnection();
+        try (PreparedStatement stmt = conn.prepareStatement("SELECT * FROM articles WHERE id = ?")) {
+            stmt.setLong(1, id);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                ArticleSummary sum = this.getArticleSummaryFromRset(rs, conn);
+                ret = new Article();
+                ret.setArticleSummary(sum);
+                ret.setContent(rs.getString("content"));
+            }
+            rs.close();
+        }
+        return ret;
+    }
+	
 	public List<Comment> getCommentsFromTo(long start, int count, String articleURL) throws SQLException {
 		List<Comment> res = new ArrayList<Comment>();
 		if (start < 0) start = 0;

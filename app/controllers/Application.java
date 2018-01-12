@@ -152,7 +152,18 @@ public class Application extends Controller {
     	// and internalServerError(String reason) si y a un problème.
     	response().setHeader("Access-Control-Allow-Origin", "*");
     	try {
-    		Article art = BlogDataAccess.getInstance().getArticleByURL(articleURL);
+    		Article art = null;
+    		try {
+        		// Check if we got an article ID as the URL
+        		long articleId = Long.parseLong(articleURL);
+        		if (articleId > 0l) {
+        			art = BlogDataAccess.getInstance().getArticleById(articleId);
+        		} else {
+        			art = BlogDataAccess.getInstance().getArticleByURL(articleURL);
+        		}
+        	} catch(NumberFormatException ex) {
+        		art = BlogDataAccess.getInstance().getArticleByURL(articleURL);
+        	}
     		if (art != null) {
     			// Let's transform this into JSON.
     			// I'll make a good ol' MAP.
