@@ -81,7 +81,7 @@ public class BlogDataAccess {
         return ret;
     }
 	
-	public List<Comment> getCommentsFromTo(long start, int count, String articleURL) throws SQLException {
+	public List<Comment> getCommentsFromTo(long start, int count, long articleId) throws SQLException {
 		List<Comment> res = new ArrayList<Comment>();
 		if (start < 0) start = 0;
 		DataSource ds = DB.getDataSource();
@@ -91,9 +91,9 @@ public class BlogDataAccess {
 		// not most other databases.
 		try {
 			PreparedStatement stmt = conn.prepareStatement("SELECT comments.id, comments.article_id, comments.author, " +
-					"comments.comment, comments.date FROM comments, articles WHERE articles.article_url = ? AND articles.id = comments.article_id ORDER BY comments.id ASC " +
+					"comments.comment, comments.date FROM comments, articles WHERE articles.id = ? AND articles.id = comments.article_id ORDER BY comments.id ASC " +
 					"LIMIT ? OFFSET ?");
-			stmt.setString(1, articleURL);
+			stmt.setLong(1, articleId);
 			stmt.setInt(2, count);
 			stmt.setLong(3, start);
 			ResultSet rset = stmt.executeQuery();
@@ -113,6 +113,16 @@ public class BlogDataAccess {
 		}
 		return res;
 	}
+	
+	public List<Comment> getCommentsFromTo(long start, int count, String articleURL) throws SQLException {
+		List<Comment> res = new ArrayList<Comment>();
+		long artId = this.getArticleIdFromUrl(articleURL);
+		if (artId > 0) {
+			res = this.getCommentsFromTo(start, count, artId);
+		}
+		return res;
+	}
+	
 	
 	/**
 	 * Though the numbering of the "id" of article summaries starts at 1,

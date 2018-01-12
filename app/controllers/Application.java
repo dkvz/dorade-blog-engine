@@ -75,12 +75,18 @@ public class Application extends Controller {
     	response().setHeader("Access-Control-Allow-Origin", "*");
     	
     	try {
-    		long articleID = BlogDataAccess.getInstance().getArticleIdFromUrl(articleURL);
-    		long count = BlogDataAccess.getInstance().getCommentCount(articleID);
+    		long articleId;
+    		try {
+	    		// Check if we got an article ID as the URL
+	    		articleId = Long.parseLong(articleURL);
+        	} catch(NumberFormatException ex) {
+        		articleId = BlogDataAccess.getInstance().getArticleIdFromUrl(articleURL);
+        	}
+    		long count = BlogDataAccess.getInstance().getCommentCount(articleId);
         	if (start >= count) {
         		return notFound();
         	} else {
-        		List<Comment> list = BlogDataAccess.getInstance().getCommentsFromTo(start, max, articleURL);
+        		List<Comment> list = BlogDataAccess.getInstance().getCommentsFromTo(start, max, articleId);
 				List<Map<String, Object>> listMap = new ArrayList<Map<String, Object>>();
 				for (Comment art : list) {
 					listMap.add(art.toReducedMap());
