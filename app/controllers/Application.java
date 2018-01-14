@@ -215,14 +215,12 @@ public class Application extends Controller {
     	final Map<String, String[]> values = request().body().asFormUrlEncoded();
     	if (values.get("author") != null && values.get("comment") != null && (values.get("article_id") != null || values.get("articleurl") != null)) {
     		// We should use something to transform special chars to HTML.
-    		String author = values.get("author")[0];
-    		String comment = values.get("comment")[0];
-    		// We don't necessarily need to escape HTML as browsers are already adding it
-    		// in a protected way. I should check if that's the case on IE as well though.
-    		if (values.get("escape_html") != null) {
+    		String author = StringEscapeUtils.escapeHtml4(values.get("author")[0]);
+    		String comment = StringEscapeUtils.escapeHtml4(values.get("comment")[0]);
+    		/* if (values.get("escape_html") != null) {
 	    		author = StringEscapeUtils.escapeHtml4(author);
 	    		comment = StringEscapeUtils.escapeHtml4(comment);
-    		}
+    		} */
     		// I should also save the IP address of the client.
     		String clientIP = request().remoteAddress();
     		try {
