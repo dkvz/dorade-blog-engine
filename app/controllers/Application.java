@@ -286,5 +286,20 @@ public class Application extends Controller {
     		return internalServerError("Database error");
     	}
     }
+    
+    public Result lastComment() {
+    	response().setHeader("Access-Control-Allow-Origin", "*");
+    	try {
+    		Comment lastCom = BlogDataAccess.getInstance().getLastComment();
+    		if (lastCom != null) {
+    			return ok(Json.toJson(lastCom.toReducedMap()));
+    		} else {
+    			return notFound();
+    		}
+    	} catch (SQLException ex) {
+    		ex.printStackTrace();
+    		return internalServerError("Database error");
+    	}
+    }
 
 }

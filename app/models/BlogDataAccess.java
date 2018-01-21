@@ -461,4 +461,25 @@ public class BlogDataAccess {
 		}
 	}
 	
+	public Comment getLastComment() throws SQLException {
+		DataSource ds = DB.getDataSource();
+		Connection conn = ds.getConnection();
+		Comment ret = null;
+		try {
+			Statement stmt = conn.createStatement();
+			ResultSet rs = stmt.executeQuery("SELECT * FROM comments ORDER BY id DESC LIMIT 1");
+			if (rs.next()) {
+				ret = new Comment();
+				ret.setArticleId(rs.getLong("article_id"));
+				ret.setAuthor(rs.getString("author"));
+				ret.setComment(rs.getString("comment"));
+				ret.setDate(new java.util.Date(rs.getLong("date") * 1000));
+				ret.setId(rs.getInt("id"));
+			}
+		} finally {
+			conn.close();
+		}
+		return ret;
+	}
+	
 }
