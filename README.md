@@ -1,5 +1,7 @@
 # Dorade Blog Backend
 
+**Retired - I now use Spring Boot**
+
 Play Framework App. made in a shamefully short time.
 
 ## Schema modification
